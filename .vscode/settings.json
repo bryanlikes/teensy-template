@@ -1,0 +1,8 @@
+{
+    "C_Cpp.default.defines": ["USB_SERIAL",
+    "LAYOUT_US_ENGLISH",
+    "TEENSYDUINO=124",
+    "F_CPU=48000000",
+    "__MK20DX256__",
+    "USING_MAKEFILE"]
+}
