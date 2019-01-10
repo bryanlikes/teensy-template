@@ -13,11 +13,14 @@ void motorOff(int motor);
 void blink();
 
 //Define Variables we'll be connecting to
-double Setpoint, Input, Output;
+int Setpoint, Input;
+float Output;
 
 //Specify the links and initial tuning parameters
-double Kp=10, Ki=1, Kd=0.015;
-PID myPID(&Input, &Output, &Setpoint, Kp, Ki, Kd, REVERSE);
+// double aggKp=8, aggKi=16, aggKd=0.35;
+//these work ok at 55 speed: double aggKp=25, aggKi=16, aggKd=1.3;
+int aggKp=100000, aggKi=10000, aggKd=31000;
+PID myPID(&Input, &Output, &Setpoint, aggKp, aggKi, aggKd, REVERSE);
 
 /*  VNH2SP30 pin definitions
  xxx[0] controls '1' outputs
@@ -33,6 +36,7 @@ int speedDeltaMotor1 = 10;
 int led = 13;
 int dir = CW;
 char tuning[20];
+long change = 0;
 
 void setup()
 {
@@ -45,88 +49,148 @@ void setup()
     pinMode(inBpin[i], OUTPUT);
     pinMode(pwmpin[i], OUTPUT);
   }
-  // Initialize braked
-  for (int i=0; i<1; i++)
-  {
-    digitalWrite(inApin[i], LOW);
-    digitalWrite(inBpin[i], LOW);
-  }
-
+  
+  motorOff(0);
   motor1.write(0);
 
-  Setpoint = 1;
+  Setpoint = 0;
   Input = motor1.read();
   //turn the PID on
-  myPID.SetOutputLimits(-255, 255);
   myPID.SetMode(AUTOMATIC);
-  myPID.SetSampleTime(1);
-  
+  change = 0;
 }
 
 void loop()
 {
-  if (Serial.available()) {
-    for( int i = 0; i < sizeof(tuning);  ++i )
-      tuning[i] = (char)0;
 
-    int size = Serial.readBytes(tuning, 20);
-    if (size == 20) {
+  //double lastInput = Input;
+  //double lastOutput = Output;
 
-    String pi = String(tuning);
-    double kp = atof(pi.substring(0,6).c_str());
-    double ki = atof(pi.substring(7,13).c_str());
-    double kd = atof(pi.substring(14,20).c_str());
-    myPID.SetTunings(kp, ki, kd);
-
-    Serial.print(myPID.GetKp(), 3);
-    Serial.print(",");
-    Serial.print(myPID.GetKi(), 3);
-    Serial.print(",");
-    Serial.println(myPID.GetKd(), 3);
-    Serial.println();
-    }
-  }
-
-  double lastInput = Input;
-  double lastOutput = Output;
-  
-
+  // Read encoder and compute output
   Input = motor1.read();
   myPID.Compute();
 
-  // if (Input < 0 && myPID.GetDirection() == DIRECT) {
-  //   myPID.SetControllerDirection(REVERSE);
-  // } else if (myPID.GetDirection() == REVERSE){
-  //   myPID.SetControllerDirection(DIRECT);
-  // }
+  // Adjust deadzone for specific motor
+  int speed = abs(Output);
+  if (speed > 65535) speed = 65535;
+  speed = speed / 65535.0*255.0;
 
+  // Set direction and run motor
   dir = CW;
   if (Output < 0) {
     dir = CCW;
   }
-   
-  int speed = abs(Output);
   motorGo(0, dir, speed);
 
+  // // Debug serial output
+  // if (lastInput != Input || lastOutput != Output) {
+  //   Serial.print("input:");
+  //   Serial.print(Input);
+  //   Serial.print("   \toutput:");
+  //   Serial.print(Output);
+  //   Serial.print("   \tspeed:");
+  //   Serial.print(speed);
+  //   Serial.print("   \tsetpoint:");
+  //   Serial.print(Setpoint);
+  //   Serial.println();
+  // }
 
-  if (lastInput != Input || lastOutput != Output) {
-    Serial.print(Input);
-    Serial.print("\t\t");
-    Serial.print(Output);
-    Serial.print("\t\t");
-    Serial.print(Setpoint);
-    Serial.print("\t\t");
-    Serial.print(myPID.GetDirection());
 
-    Serial.println();
-  }
-}
+  // //Tuning Initial
+  // change++;
+  // if (change == 40000) {
+  //   Setpoint = 500;
+  // }
+  // if (change < 80000) {
+  //   if (change % 100 == 0) {
+  //     String str = String(change);
+  //     str.append(",");
+  //     str.append(String(Input).c_str());
+  //     str.append(",");
+  //     str.append(String(Setpoint).c_str());
+  //     Serial.println(str.c_str());
+  //   }
+  // } else if (change == 80001) {
+  //   Serial.print("\n\n\n\n");
+  // }
 
-void blink() {
-  digitalWrite(led, LOW);    // turn the LED off
-  delay(100);               // wait
-  digitalWrite(led, HIGH);   // turn the LED on
-  delay(1);               // wait
+  // //Tuning round 2
+  // change++;
+  // if (change == 40000) {
+  //   Setpoint = 500;
+  // } else if (change == 80000) {
+  //   Setpoint = 5000;
+  // } else if (change == 80000) {
+  //   Setpoint = 5000;
+  // } else if (change == 100000) {
+  //   Setpoint = 0;
+  // }
+  // if (change < 130000) {
+  //   if (change % 100 == 0) {
+  //     String str = String(change);
+  //     str.append(",");
+  //     str.append(String(Input).c_str());
+  //     str.append(",");
+  //     str.append(String(Setpoint).c_str());
+  //     Serial.println(str.c_str());
+  //   }
+  // } else if (change == 80001) {
+  //   Serial.print("\n\n\n\n");
+  // }
+
+
+
+
+
+
+
+
+
+
+
+
+
+  //JuNK
+
+  //   change++;
+  //   if (change > 100000) {
+  //     change =0;
+  //   //if (Serial.available()) {
+  //   // for( int i = 0; i < sizeof(tuning);  ++i )
+  //   //   tuning[i] = (char)0;
+
+  //   // int size = Serial.readBytes(tuning, 20);
+  //   // if (size == 20) {
+
+  //   // // Brake motor
+  //   // motorGo(0, BRAKEVCC, 0);
+  //   // delay(500);
+
+  //   // // Parse new tuning
+  //   // String pi = String(tuning);
+  //   // double kp = atof(pi.substring(0,6).c_str());
+  //   // double ki = atof(pi.substring(7,13).c_str());
+  //   // double kd = atof(pi.substring(14,20).c_str());
+
+  //   // // Apply tune and output values to serial
+  //   // myPID.SetTunings(kp, ki, kd);
+  //   // Serial.print(myPID.GetKp(), 3);
+  //   // Serial.print(",");
+  //   // Serial.print(myPID.GetKi(), 3);
+  //   // Serial.print(",");
+  //   // Serial.println(myPID.GetKd(), 3);
+  //   // Serial.println();
+  //   // }
+
+  //   // int size = Serial.readBytes(tuning, 20);
+  //   // String pi = String(tuning);
+  //   // double setpoint = atof(pi.c_str());
+  //   if (Setpoint == 0) {
+  //     Setpoint = 800;
+  //   } else {
+  //     Setpoint = 0;
+  //   }
+  // }
 }
 
 void motorOff(int motor)

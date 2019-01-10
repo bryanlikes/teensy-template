@@ -47,38 +47,43 @@
 
 // void loop()
 // {
-//   if (speedMotor1 > 240 || speedMotor1 < -240) {
-//     speedDeltaMotor1 = speedDeltaMotor1*-1;
-//   }
+//   motorGo(0, 1, 255);
+//   delay(1000);
+//   motorGo(0, BRAKEVCC, 255);
+//   delay(1000);
+
+//   // if (speedMotor1 > 240 || speedMotor1 < -240) {
+//   //   speedDeltaMotor1 = speedDeltaMotor1*-1;
+//   // }
   
-//   speedMotor1 += speedDeltaMotor1;
+//   // speedMotor1 += speedDeltaMotor1;
   
-//   int dir = CW;
-//   if (speedMotor1 < 0) {
-//     dir = CCW;
-//   }
+//   // int dir = CW;
+//   // if (speedMotor1 < 0) {
+//   //   dir = CCW;
+//   // }
 
 
-//   motorGo(0, dir, abs(speedMotor1));
-//   delay(100);
+//   // motorGo(0, dir, abs(speedMotor1));
+//   // delay(100);
 
 
-//   Serial.print(dir);
-//   Serial.print("...\t");
-//   Serial.print(abs(speedMotor1));
-//   Serial.print("...\t");
-//   Serial.print(speedMotor1);
-//   Serial.print("...\t");
+//   // Serial.print(dir);
+//   // Serial.print("...\t");
+//   // Serial.print(abs(speedMotor1));
+//   // Serial.print("...\t");
+//   // Serial.print(speedMotor1);
+//   // Serial.print("...\t");
   
 
-//   long newMotor1;
-//   newMotor1 = motor1.read();
-//   //if (positionMotor1 != newMotor1) {
-//     Serial.print(newMotor1);
-//     positionMotor1 = newMotor1;
-//   //}
+//   // long newMotor1;
+//   // newMotor1 = motor1.read();
+//   // //if (positionMotor1 != newMotor1) {
+//   //   Serial.print(newMotor1);
+//   //   positionMotor1 = newMotor1;
+//   // //}
 
-//   Serial.println();
+//   // Serial.println();
 // }
 
 // void blink() {
